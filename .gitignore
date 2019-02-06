@@ -182,3 +182,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+/pyThia.cfg
