@@ -152,7 +152,7 @@ def login():
     session['token'] = token
     return redirect(esisecurity.get_auth_uri(
         state=token,
-        scopes=['esi-wallet.read_character_wallet.v1']
+        scopes=['esi-wallet.read_character_wallet.v1', 'esi-markets.read_character_orders.v1']
     ))
 
 
@@ -225,7 +225,7 @@ def callback():
 # -----------------------------------------------------------------------
 @app.route('/')
 def index():
-    wallet = None
+    wallet = wallet_journal = wallet_transactions = orders = orders_history = None
 
     # if the user is authed, get the wallet content !
     if current_user.is_authenticated:
@@ -233,13 +233,36 @@ def index():
         # if the access token need some update
         esisecurity.update_token(current_user.get_sso_data())
 
-        op = esiapp.op['get_characters_character_id_wallet_journal'](
+        op_wallet = esiapp.op['get_characters_character_id_wallet'](
             character_id=current_user.character_id
         )
-        wallet = esiclient.request(op)
+        op_wallet_journal = esiapp.op['get_characters_character_id_wallet_journal'](
+            character_id=current_user.character_id
+        )
+        op_wallet_transactions = esiapp.op['get_characters_character_id_wallet_transactions'](
+            character_id=current_user.character_id
+        )
+
+        op_orders = esiapp.op['get_characters_character_id_orders'](
+            character_id=current_user.character_id
+        )
+        op_orders_history = esiapp.op['get_characters_character_id_orders_history'](
+            character_id=current_user.character_id
+        )
+
+        wallet = esiclient.request(op_wallet)
+        wallet_journal = esiclient.request(op_wallet_journal)
+        wallet_transactions = esiclient.request(op_wallet_transactions)
+
+        orders = esiclient.request(op_orders)
+        orders_history = esiclient.request(op_orders_history)
 
     return render_template('base.html', **{
         'wallet': wallet,
+        'wallet_journal': wallet_journal,
+        'wallet_transactions': wallet_transactions,
+        'orders': orders,
+        'orders_history': orders_history,
     })
 
 
