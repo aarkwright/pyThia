@@ -21,26 +21,11 @@
 
 {% else %}
 Hello <strong>{{ current_user.character_name }}</strong><br>
-Your wallet is currently full of
-<div>
-Wallet: <strong>{{ wallet.data }}</strong>
-</div>
 
 <div>
-Wallet Journal: <strong>{{ wallet_journal.data }}</strong>
+Debug: <strong>{{ debug.data }}</strong>
 </div>
 
-<div>
-Wallet Transactions: <strong>{{ wallet_transactions.data }}</strong>
-</div>
-
-<div>
-Orders: <strong>{{ orders.data }}</strong>
-</div>
-
-<div>
-Orders History: <strong>{{ orders_history.data }}</strong>
-</div>
 
 <br>
 <br>

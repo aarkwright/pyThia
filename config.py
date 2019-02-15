@@ -19,8 +19,8 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
 # -----------------------------------------------------
 ESI_DATASOURCE = 'tranquility'  # Change it to 'singularity' to use the test server
 ESI_SWAGGER_JSON = 'https://esi.evetech.net/latest/swagger.json?datasource=%s' % ESI_DATASOURCE
-ESI_SECRET_KEY = 'Kt64vJzwfK6dDd81B2EJ4u8YsKHJAcbNwUXl0GXA'  # your secret key
-ESI_CLIENT_ID = '58f938219867468099c3569cffedf366'  # your client ID
+ESI_SECRET_KEY = '6ExDxKwcKaDPfAkZgKsvhnNSsBi5DMWJxQWMrGTN'  # your secret key
+ESI_CLIENT_ID = '1fd0d86dcc75422dbfb585aa59ff2d1f'  # your client ID
 ESI_CALLBACK = 'http://%s:%d/sso/callback' % (HOST, PORT)  # the callback URI you gave CCP
 ESI_USER_AGENT = 'pyThia'
 

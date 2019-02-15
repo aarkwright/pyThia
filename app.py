@@ -24,11 +24,13 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
+from string import ascii_letters, digits
+from random import SystemRandom
+
 import config
 import hashlib
 import hmac
 import logging
-import random
 import time
 
 # logger stuff
@@ -135,9 +137,9 @@ esiclient = EsiClient(
 # -----------------------------------------------------------------------
 def generate_token():
     """Generates a non-guessable OAuth token"""
-    chars = ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-    rand = random.SystemRandom()
-    random_string = ''.join(rand.choice(chars) for _ in range(40))
+    chars = (ascii_letters + digits)
+    rand = SystemRandom()
+    random_string = ''.join(rand.choice(chars) for _ in range(len(chars)))
     return hmac.new(
         config.SECRET_KEY.encode('utf-8'),
         random_string.encode('utf-8'),
@@ -226,6 +228,7 @@ def callback():
 @app.route('/')
 def index():
     wallet = wallet_journal = wallet_transactions = orders = orders_history = None
+    debug = regions = None
 
     # if the user is authed, get the wallet content !
     if current_user.is_authenticated:
@@ -233,22 +236,12 @@ def index():
         # if the access token need some update
         esisecurity.update_token(current_user.get_sso_data())
 
-        op_wallet = esiapp.op['get_characters_character_id_wallet'](
-            character_id=current_user.character_id
-        )
-        op_wallet_journal = esiapp.op['get_characters_character_id_wallet_journal'](
-            character_id=current_user.character_id
-        )
-        op_wallet_transactions = esiapp.op['get_characters_character_id_wallet_transactions'](
-            character_id=current_user.character_id
-        )
+        op_wallet = esiapp.op['get_characters_character_id_wallet'](character_id=current_user.character_id)
+        op_wallet_journal = esiapp.op['get_characters_character_id_wallet_journal'](character_id=current_user.character_id)
+        op_wallet_transactions = esiapp.op['get_characters_character_id_wallet_transactions'](character_id=current_user.character_id)
 
-        op_orders = esiapp.op['get_characters_character_id_orders'](
-            character_id=current_user.character_id
-        )
-        op_orders_history = esiapp.op['get_characters_character_id_orders_history'](
-            character_id=current_user.character_id
-        )
+        op_orders = esiapp.op['get_characters_character_id_orders'](character_id=current_user.character_id)
+        op_orders_history = esiapp.op['get_characters_character_id_orders_history'](character_id=current_user.character_id)
 
         wallet = esiclient.request(op_wallet)
         wallet_journal = esiclient.request(op_wallet_journal)
@@ -257,12 +250,13 @@ def index():
         orders = esiclient.request(op_orders)
         orders_history = esiclient.request(op_orders_history)
 
+        ### Get all regions
+
+        op_regions = esiapp.op['get_universe_regions']()
+        regions = esiclient.request(op_regions)
+
     return render_template('base.html', **{
-        'wallet': wallet,
-        'wallet_journal': wallet_journal,
-        'wallet_transactions': wallet_transactions,
-        'orders': orders,
-        'orders_history': orders_history,
+        'debug': regions,
     })
 
 
