@@ -24,12 +24,15 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
+from classes.static import Regions
 from string import ascii_letters, digits
 from random import SystemRandom
+from pathlib import Path
 
 import config
 import hashlib
 import hmac
+import json
 import logging
 import time
 
@@ -86,7 +89,7 @@ class User(db.Model, UserMixin):
             'access_token': self.access_token,
             'refresh_token': self.refresh_token,
             'expires_in': (
-                self.access_token_expires - datetime.utcnow()
+                    self.access_token_expires - datetime.utcnow()
             ).total_seconds()
         }
 
@@ -228,7 +231,7 @@ def callback():
 @app.route('/')
 def index():
     wallet = wallet_journal = wallet_transactions = orders = orders_history = None
-    debug = regions = None
+    regions = Regions(esiapp, esiclient)
 
     # if the user is authed, get the wallet content !
     if current_user.is_authenticated:
@@ -236,24 +239,11 @@ def index():
         # if the access token need some update
         esisecurity.update_token(current_user.get_sso_data())
 
-        op_wallet = esiapp.op['get_characters_character_id_wallet'](character_id=current_user.character_id)
-        op_wallet_journal = esiapp.op['get_characters_character_id_wallet_journal'](character_id=current_user.character_id)
-        op_wallet_transactions = esiapp.op['get_characters_character_id_wallet_transactions'](character_id=current_user.character_id)
-
-        op_orders = esiapp.op['get_characters_character_id_orders'](character_id=current_user.character_id)
-        op_orders_history = esiapp.op['get_characters_character_id_orders_history'](character_id=current_user.character_id)
-
-        wallet = esiclient.request(op_wallet)
-        wallet_journal = esiclient.request(op_wallet_journal)
-        wallet_transactions = esiclient.request(op_wallet_transactions)
-
-        orders = esiclient.request(op_orders)
-        orders_history = esiclient.request(op_orders_history)
-
-        ### Get all regions
-
-        op_regions = esiapp.op['get_universe_regions']()
-        regions = esiclient.request(op_regions)
+        # load the regions data
+        if Path('./data_temp/regions.json').is_file():
+            regions = regions.get_regions(load=True)
+        else:
+            regions = regions.get_regions(save=False)
 
     return render_template('base.html', **{
         'debug': regions,
