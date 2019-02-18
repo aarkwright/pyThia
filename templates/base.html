@@ -23,7 +23,11 @@
 Hello <strong>{{ current_user.character_name }}</strong><br>
 
 <div>
-Debug: <strong>{{ debug.data }}</strong>
+Wallet total: <strong>{{ data }}</strong>
+{#<script>#}
+{#    var jsonStr = JSON.stringify({{ data }});#}
+{#    document.body.innerHTML = jsonStr;#}
+{#</script>#}
 </div>
 
 

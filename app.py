@@ -7,6 +7,7 @@ from esipy import EsiSecurity
 from esipy.exceptions import APIException
 
 from flask import Flask
+from flask import jsonify
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -25,6 +26,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
 from classes.static import Regions
+from classes.finance import Finance
 from string import ascii_letters, digits
 from random import SystemRandom
 from pathlib import Path
@@ -32,7 +34,6 @@ from pathlib import Path
 import config
 import hashlib
 import hmac
-import json
 import logging
 import time
 
@@ -149,7 +150,6 @@ def generate_token():
         hashlib.sha256
     ).hexdigest()
 
-
 @app.route('/sso/login')
 def login():
     """ this redirects the user to the EVE SSO login """
@@ -160,13 +160,11 @@ def login():
         scopes=['esi-wallet.read_character_wallet.v1', 'esi-markets.read_character_orders.v1']
     ))
 
-
 @app.route('/sso/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("index"))
-
 
 @app.route('/sso/callback')
 def callback():
@@ -228,26 +226,48 @@ def callback():
 # -----------------------------------------------------------------------
 # Index Routes
 # -----------------------------------------------------------------------
+# Check auth
 @app.route('/')
 def index():
-    wallet = wallet_journal = wallet_transactions = orders = orders_history = None
-    regions = Regions(esiapp, esiclient)
-
-    # if the user is authed, get the wallet content !
     if current_user.is_authenticated:
-        # give the token data to esisecurity, it will check alone
-        # if the access token need some update
+        # Give the token data to esisecurity
+        # it will check if the access token need some update
         esisecurity.update_token(current_user.get_sso_data())
 
-        # load the regions data
-        if Path('./data_temp/regions.json').is_file():
-            regions = regions.get_regions(load=True)
-        else:
-            regions = regions.get_regions(save=False)
+    f = Finance(id_char=current_user.character_id,
+                esiapp=esiapp,
+                esiclient=esiclient)
+
 
     return render_template('base.html', **{
-        'debug': regions,
+        'data': f.get_data('wallet'),
     })
+
+@app.route('/wJournal')
+def wJournal():
+    if current_user.is_authenticated:
+        # Give the token data to esisecurity
+        # it will check if the access token need some update
+        esisecurity.update_token(current_user.get_sso_data())
+
+    f = Finance(id_char=current_user.character_id,
+                esiapp=esiapp,
+                esiclient=esiclient)
+
+    return jsonify(f.get_data('wallet_journal'))
+
+@app.route('/wTransactions')
+def wTransactions():
+    if current_user.is_authenticated:
+        # Give the token data to esisecurity
+        # it will check if the access token need some update
+        esisecurity.update_token(current_user.get_sso_data())
+
+    f = Finance(id_char=current_user.character_id,
+                esiapp=esiapp,
+                esiclient=esiclient)
+
+    return jsonify(f.get_data('wallet_transactions'))
 
 
 if __name__ == '__main__':
