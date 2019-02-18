@@ -4,7 +4,7 @@ from pathlib import Path
 
 class Regions():
     def __init__(self, esiapp, esiclient):
-        ### Get all regions
+        # Get all regions
         self.op_regions = esiapp.op['get_universe_regions']()
         self.region_ids = esiclient.request(self.op_regions)
         self.esiapp = esiapp
@@ -54,3 +54,20 @@ class Regions():
 
 
 
+# Temp:
+# op_wallet = esiapp.op['get_characters_character_id_wallet'](character_id=current_user.character_id)
+# op_wallet_journal = esiapp.op['get_characters_character_id_wallet_journal'](
+#     character_id=current_user.character_id)
+# op_wallet_transactions = esiapp.op['get_characters_character_id_wallet_transactions'](
+#     character_id=current_user.character_id)
+#
+# op_orders = esiapp.op['get_characters_character_id_orders'](character_id=current_user.character_id)
+# op_orders_history = esiapp.op['get_characters_character_id_orders_history'](
+#     character_id=current_user.character_id)
+#
+# wallet = esiclient.request(op_wallet)
+# wallet_journal = esiclient.request(op_wallet_journal)
+# wallet_transactions = esiclient.request(op_wallet_transactions)
+#
+# orders = esiclient.request(op_orders)
+# orders_history = esiclient.request(op_orders_history)
