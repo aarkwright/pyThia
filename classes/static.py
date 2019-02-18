@@ -4,13 +4,13 @@ from pathlib import Path
 
 class Regions():
     def __init__(self, esiapp, esiclient):
-        # Get all regions
-        self.op_regions = esiapp.op['get_universe_regions']()
-        self.region_ids = esiclient.request(self.op_regions)
         self.esiapp = esiapp
-        self.esiclient= esiclient
+        self.esiclient = esiclient
 
     def get_regions(self, file='./data_temp/regions.json', load=False, save=False):
+        op_regions = self.esiapp.op['get_universe_regions']()
+        region_ids = self.esiclient.request(op_regions)
+
         # Get constellation info
         # Temporary stuff, will refactor to DB storage.
         if load and Path(file).is_file():
@@ -25,7 +25,7 @@ class Regions():
             regions = {}
 
             # Save JSON to file
-            for region_id in list(self.region_ids.data):
+            for region_id in list(region_ids.data):
                 op_regions_info = self.esiapp.op['get_universe_regions_region_id'](region_id=region_id)
                 region_info = self.esiclient.request(op_regions_info)
 
