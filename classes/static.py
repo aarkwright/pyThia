@@ -2,10 +2,11 @@ import json
 from pathlib import Path
 
 
-class Regions():
+class Regions:
     def __init__(self, esiapp, esiclient):
         self.esiapp = esiapp
         self.esiclient = esiclient
+        self.regions = self.get_regions(load=True)
 
     def get_regions(self, file='./data_temp/regions.json', load=False, save=False):
         op_regions = self.esiapp.op['get_universe_regions']()
