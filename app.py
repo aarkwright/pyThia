@@ -25,13 +25,11 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
-from classes.static import Regions
 from classes.finance import Finance
 from string import ascii_letters, digits
 from random import SystemRandom
-from pathlib import Path
 
-import config
+from classes import config
 import hashlib
 import hmac
 import logging
@@ -150,6 +148,7 @@ def generate_token():
         hashlib.sha256
     ).hexdigest()
 
+
 @app.route('/sso/login')
 def login():
     """ this redirects the user to the EVE SSO login """
@@ -160,11 +159,13 @@ def login():
         scopes=['esi-wallet.read_character_wallet.v1', 'esi-markets.read_character_orders.v1']
     ))
 
+
 @app.route('/sso/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("index"))
+
 
 @app.route('/sso/callback')
 def callback():
@@ -238,10 +239,10 @@ def index():
                 esiapp=esiapp,
                 esiclient=esiclient)
 
-
     return render_template('base.html', **{
         'data': f.get_data('wallet'),
     })
+
 
 @app.route('/wJournal')
 def wJournal():
@@ -255,6 +256,7 @@ def wJournal():
                 esiclient=esiclient)
 
     return jsonify(f.get_data('wallet_journal'))
+
 
 @app.route('/wTransactions')
 def wTransactions():

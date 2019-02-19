@@ -5,9 +5,18 @@ import datetime
 # Application configurations
 # ------------------------------------------------------
 DEBUG = True
-SECRET_KEY = 'W422dbfb58MrGTN6EaDPfAkDM1s'
+SECRET_KEY = 'ChangeMe!'
 PORT = 42001
 HOST = 'localhost'
+
+# -----------------------------------------------------
+# Mongo Database configurations
+# ------------------------------------------------------
+MONGODB_HOST = 'localhost'
+MONGODB_PORT = 27017
+MONGODB_USER = 'root'
+MONGODB_PASS = 'ChangeMe!'
+
 
 # -----------------------------------------------------
 # SQL Alchemy configs
@@ -17,11 +26,11 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
 # -----------------------------------------------------
 # ESI Configs
 # -----------------------------------------------------
+ESI_CLIENT_ID = 'ChangeMe!'  # your client ID
+ESI_CALLBACK = 'http://%s:%d/sso/callback' % (HOST, PORT)  # the callback URI you gave CCP
 ESI_DATASOURCE = 'tranquility'  # Change it to 'singularity' to use the test server
 ESI_SWAGGER_JSON = 'https://esi.evetech.net/latest/swagger.json?datasource=%s' % ESI_DATASOURCE
-ESI_SECRET_KEY = '6ExDxKwcKaDPfAkZgKsvhnNSsBi5DMWJxQWMrGTN'  # your secret key
-ESI_CLIENT_ID = '1fd0d86dcc75422dbfb585aa59ff2d1f'  # your client ID
-ESI_CALLBACK = 'http://%s:%d/sso/callback' % (HOST, PORT)  # the callback URI you gave CCP
+ESI_SECRET_KEY = 'ChangeMe!'  # your secret key
 ESI_USER_AGENT = 'pyThia'
 
 
