@@ -183,3 +183,4 @@ venv.bak/
 .mypy_cache/
 
 *.db
+classes/config.py
