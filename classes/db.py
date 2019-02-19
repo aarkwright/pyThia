@@ -1,26 +1,18 @@
 # -*- encoding: utf-8 -*-
 import pymongo
-import config
 import urllib.parse
+from classes import config
 
 
 class MongoDB(object):
     def __init__(self):
-
-        # Get the server location
-        self.host = config.MONGODB_HOST
-        self.port = config.MONGODB_PORT
-
-        # Get the auth info
-        self.username = urllib.parse.quote_plus(config.MONGODB_USER)
-        self.password = urllib.parse.quote_plus(config.MONGODB_PASS)
-
         # Initiate the client
-        self.client = pymongo.MongoClient("mongodb://%s:%s@%s:%s/" % (self.username,
-                                                                      self.password,
-                                                                      self.host,
-                                                                      self.port))
-        # self.client = pymongo.MongoClient("mongodb://%s:%s/" % (self.host, self.port))
+        self.client = pymongo.MongoClient("mongodb://%s:%s@%s:%s/" %
+                                          (urllib.parse.quote_plus(config.MONGODB_USER),
+                                           urllib.parse.quote_plus(config.MONGODB_PASS),
+                                           config.MONGODB_HOST,
+                                           config.MONGODB_PORT))
+
         self.dblist = self.client.list_database_names()
 
     def add(self, database, table, data):

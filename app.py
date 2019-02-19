@@ -26,6 +26,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
 from classes.finance import Finance
+from classes.db import MongoDB
 from string import ascii_letters, digits
 from random import SystemRandom
 
@@ -52,6 +53,7 @@ app.config.from_object(config)
 # init db
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+mongo = MongoDB()
 
 # init flask login
 login_manager = LoginManager()
