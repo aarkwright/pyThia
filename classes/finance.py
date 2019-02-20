@@ -4,7 +4,7 @@ import json
 from .helpers import *
 
 from pathlib import Path
-
+from classes.db import MongoDB
 
 
 class Finance:
@@ -12,6 +12,7 @@ class Finance:
         self.id_char = id_char
         self.esiapp = esiapp
         self.esiclient = esiclient
+        self.db = MongoDB()
 
         # Generics
         self.file_wallet = './data/wallet.json'
@@ -33,10 +34,10 @@ class Finance:
         operation = self.esiapp.op[api](character_id=self.id_char)
         return self.esiclient.request(operation)
 
-    def get_data(self, type):
+    def get_data(self, call_type):
         # Check if key correct
-        if type in self.links.keys():
-            link = self.links[type]
+        if call_type in self.links.keys():
+            link = self.links[call_type]
         else:
             raise KeyError
 
@@ -100,8 +101,6 @@ class Finance:
     # def get_orders_history(self):
     #     return self.esiop_char('get_characters_character_id_orders_history').data
 
-
-
     def read_json_data(self, file):
         if Path(file).is_file():
             try:
@@ -119,3 +118,15 @@ class Finance:
                 json.dump(data, fp, sort_keys=True)
         except IOError as e:
             raise e
+
+    def read_mongo_data(self, table):
+        return self.db.get_table(table=table)
+
+    def write_mongo_data(self, table, new_data, update=True):
+
+        if not update:
+        #     # data = self.read_mongo_data(db_name=db_name, db_table=db_table)
+        #     # data += new_data
+            self.db.insert_table(table=table, data=new_data, unique=new_data.keys())
+        else:
+            self.db.update_table(table=table, data=new_data)
