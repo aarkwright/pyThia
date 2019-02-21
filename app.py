@@ -10,6 +10,7 @@ from flask import Flask
 from flask import jsonify
 from flask import redirect
 from flask import render_template
+from flask import Response
 from flask import request
 from flask import session
 from flask import url_for
@@ -27,12 +28,14 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from classes.finance import Finance
 from classes.db import MongoDB
+from classes.helpers import *
 from string import ascii_letters, digits
 from random import SystemRandom
 
 from classes import config
 import hashlib
 import hmac
+import json
 import logging
 import time
 
@@ -241,8 +244,12 @@ def index():
                 esiapp=esiapp,
                 esiclient=esiclient)
 
+    data = { 'date': time.time(), 'total': f.get_data('wallet')}
+
+    f.write_mongo_data('wallet', [data], update=False)
+
     return render_template('base.html', **{
-        'data': f.get_data('wallet'),
+        'data': data['total'],
     })
 
 
@@ -257,8 +264,11 @@ def wJournal():
                 esiapp=esiapp,
                 esiclient=esiclient)
 
-    return jsonify(f.get_data('wallet_journal'))
+    data = f.get_data('wallet_journal')
+    f.write_mongo_data('wallet_journal', data, update=False)
 
+    # return jsonify({'data': data})
+    return Response(json.dumps(data), mimetype='application/json')
 
 @app.route('/wTransactions')
 def wTransactions():
@@ -271,8 +281,11 @@ def wTransactions():
                 esiapp=esiapp,
                 esiclient=esiclient)
 
-    return jsonify(f.get_data('wallet_transactions'))
+    data = f.get_data('wallet_transactions')
+    f.write_mongo_data('wallet_transactions', data, update=False)
 
+    # return jsonify(data)
+    return Response(json.dumps(data), mimetype='application/json')
 
 if __name__ == '__main__':
     app.run(port=config.PORT, host=config.HOST)

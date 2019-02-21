@@ -51,13 +51,14 @@ class Finance:
             # Assume Wallet total value
             return data
         else:
-            results = {}
+            results = []
 
             # Convert to dict
             for entry in data:
-                unix_timestamp = ts_to_unix(entry['date'].v.timetuple())
-                del entry['date']
-                results[unix_timestamp] = dict(entry)
+                if not isinstance(entry['date'], float):
+                    entry['date'] = ts_to_unix(entry['date'].v.timetuple())
+
+                results.append(entry)
 
             # self.write_wallet(results)
 
@@ -122,11 +123,11 @@ class Finance:
     def read_mongo_data(self, table):
         return self.db.get_table(table=table)
 
-    def write_mongo_data(self, table, new_data, update=True):
+    def write_mongo_data(self, table, new_data, update=False):
 
         if not update:
         #     # data = self.read_mongo_data(db_name=db_name, db_table=db_table)
         #     # data += new_data
-            self.db.insert_table(table=table, data=new_data, unique=new_data.keys())
+            self.db.insert_table(table=table, data=new_data, unique='date')#, unique=new_data.keys())
         else:
             self.db.update_table(table=table, data=new_data)

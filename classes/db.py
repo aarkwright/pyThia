@@ -52,14 +52,14 @@ class MongoDB(object):
                 if item[unique] not in [e[unique] for e in current_table_data]:
                     table.insert_one(item)
 
-    def update_table(self, table, data, unique=True):
+    def update_table(self, table, data):
         # This adds new items only if they're not already in the collection;
         table = self.db[table]
 
         # data must be a list
         for item in data:
-            print(item['name'])
-            table.update_one({"_id": "*"}, {"$set": data}, upsert=unique)
+            print(item)
+            table.update_one({"_id": "*"}, {"$set": data}, upsert=True)
 
 
 if __name__ == "__main__":
