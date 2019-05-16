@@ -161,7 +161,7 @@ def login():
     session['token'] = token
     return redirect(esisecurity.get_auth_uri(
         state=token,
-        scopes=['esi-wallet.read_character_wallet.v1', 'esi-markets.read_character_orders.v1']
+        scopes=config.ESI_SCOPES
     ))
 
 
