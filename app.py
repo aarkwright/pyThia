@@ -27,8 +27,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
 from classes.finance import Finance
-from classes.db import MongoDB
+# from classes.db import MongoDB
 from classes.helpers import *
+from classes.static import *
+from classes.trade import *
 from string import ascii_letters, digits
 from random import SystemRandom
 
@@ -56,7 +58,7 @@ app.config.from_object(config)
 # init db
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-mongo = MongoDB()
+# mongo = MongoDB()
 
 # init flask login
 login_manager = LoginManager()
@@ -161,7 +163,7 @@ def login():
     session['token'] = token
     return redirect(esisecurity.get_auth_uri(
         state=token,
-        scopes=['esi-wallet.read_character_wallet.v1', 'esi-markets.read_character_orders.v1']
+        scopes=config.ESI_SCOPES
     ))
 
 
@@ -234,26 +236,76 @@ def callback():
 # -----------------------------------------------------------------------
 # Check auth
 @app.route('/')
+@login_required
 def index():
+    if current_user.is_authenticated:
+        esisecurity.update_token(current_user.get_sso_data())
+
+
+    # t = TypeIds(esiapp, esiclient)
+    m = Markets(esiapp, esiclient)
+    theforge = m.get_data('market_orders', m.region_theforge)
+    domain = m.get_data('market_orders', m.region_domain)
+
+
+
+
+    return Response('done!') #, mimetype='application/json')
+
+@app.route('/debug')
+@login_required
+def debug():
     if current_user.is_authenticated:
         # Give the token data to esisecurity
         # it will check if the access token need some update
         esisecurity.update_token(current_user.get_sso_data())
+    # else:
+    #     return redirect(url_for('/sso/login'))
 
     f = Finance(id_char=current_user.character_id,
                 esiapp=esiapp,
                 esiclient=esiclient)
 
-    data = { 'date': time.time(), 'total': f.get_data('wallet')}
+    data = {'date': time.time(), 'total': f.get_data('wallet')}
 
-    f.write_mongo_data('wallet', [data], update=False)
+    # f.write_mongo_data('wallet', [data], update=False)
 
     return render_template('base.html', **{
         'data': data['total'],
     })
 
+###################################################################################################
+###################################################################################################
+###################################################################################################
+# DEBUG
+@app.route('/test')
+@login_required
+def test():
+    if current_user.is_authenticated:
+        esisecurity.update_token(current_user.get_sso_data())
 
+    f = Finance(current_user.character_id, esiapp, esiclient)
+
+    data = {
+        'date': time.time(),
+        'wallet_total': f.get_data('wallet'),
+        'wallet_journal': f.get_data('wallet_journal'),
+        'wallet_transactions': f.get_data('wallet_transactions')
+    }
+
+    # f.write_mongo_data('wallet', [data], update=False)
+
+    return render_template('base.html', **{
+        'data': data,
+    })
+
+
+
+###################################################################################################
+###################################################################################################
+###################################################################################################
 @app.route('/wJournal')
+@login_required
 def wJournal():
     if current_user.is_authenticated:
         # Give the token data to esisecurity
@@ -264,13 +316,15 @@ def wJournal():
                 esiapp=esiapp,
                 esiclient=esiclient)
 
-    data = f.get_data('wallet_journal')
-    f.write_mongo_data('wallet_journal', data, update=False)
+    data = f.get_data('wallet_journal')[0]
+    # f.write_mongo_data('wallet_journal', data, update=False)
 
     # return jsonify({'data': data})
     return Response(json.dumps(data), mimetype='application/json')
 
+
 @app.route('/wTransactions')
+@login_required
 def wTransactions():
     if current_user.is_authenticated:
         # Give the token data to esisecurity
@@ -281,11 +335,12 @@ def wTransactions():
                 esiapp=esiapp,
                 esiclient=esiclient)
 
-    data = f.get_data('wallet_transactions')
-    f.write_mongo_data('wallet_transactions', data, update=False)
+    data = f.get_data('wallet_transactions')[0]
+    # f.write_mongo_data('wallet_transactions', data[0], update=False)
 
     # return jsonify(data)
     return Response(json.dumps(data), mimetype='application/json')
+
 
 if __name__ == '__main__':
     app.run(port=config.PORT, host=config.HOST)

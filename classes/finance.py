@@ -44,6 +44,7 @@ class Finance:
         # Store the 'data' key from response
         try:
             data = self.esiop_char(api=link).data
+            headers = self.esiop_char(api=link).header
         except Exception as e:
             raise e
 
@@ -62,7 +63,7 @@ class Finance:
 
             # self.write_wallet(results)
 
-            return results
+            return results, headers
 
     #
     # def get_wallet(self):

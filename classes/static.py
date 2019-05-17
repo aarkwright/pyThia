@@ -62,6 +62,57 @@ class Regions:
 
             return data
 
+
 class TypeIds:
-    def __init__(self):
-        pass
+    def __init__(self, esiapp, esiclient):
+        self.esiapp = esiapp
+        self.esiclient = esiclient
+
+        # Generics
+        self.file = './data/static_types.json'
+
+        # load the regions data
+        if Path(self.file).is_file():
+            self.data = self.get_types(load=True)
+        else:
+            self.data = self.get_types(save=True)
+
+    def get_types(self, load=False, save=False):
+        type_ids = []
+        op_types = self.esiapp.op['get_universe_types'](page=1)
+        pages = self.esiclient.request(op_types).header['x-pages'][0]
+
+        for i in range(1, int(pages)+1):
+            op_types = self.esiapp.op['get_universe_types'](page=i)
+            data = self.esiclient.request(op_types).data
+
+            type_ids.append(data)
+
+        # flatten the list:
+        type_ids = [item for sublist in type_ids for item in sublist]
+
+        # Type info
+        # Temporary stuff, will refactor to DB storage.
+        if load and Path(self.file).is_file():
+            # Get from JSON file
+            with open(self.file, 'r') as fp:
+                data = json.load(fp)
+
+            return data
+
+        if save:
+            # regions_data = dict.fromkeys(list(region_ids.data), 0)
+            data = {}
+
+            # Save JSON to file
+            for type_id in type_ids:
+                op_type_info = self.esiapp.op['get_universe_types_type_id'](type_id=type_id)
+                type_info = self.esiclient.request(op_type_info)
+
+                # Add the name key
+                data[type_id] = dict(type_info.data)
+
+            with open(self.file, 'w') as fp:
+                json.dump(data, fp, sort_keys=True)
+
+            return data
