@@ -3,6 +3,28 @@ import json
 from pathlib import Path
 
 
+class Search:
+    def __init__(self, esiapp, esiclient):
+        self.esiapp = esiapp
+        self.esiclient = esiclient
+
+    def get_type_info(self, type_id):
+        api = 'universe_types_type_id'
+
+        operation = self.esiapp.op[api](type_id=type_id)
+        response = self.esiclient.request(operation)
+
+        # if 'x-pages' in response.header.keys():
+        #     pages = response.header['x-pages'][0]
+        #
+        #     for i in range(1, int(pages) + 1):
+        #         operation = self.esiapp.op[api](search=type_id, page=i)
+        #         response = self.esiclient.request(operation)
+        #         results.append(response.data)
+        return response.data
+
+
+
 class Regions:
     def __init__(self, esiapp, esiclient):
         self.esiapp = esiapp
@@ -98,21 +120,20 @@ class TypeIds:
             with open(self.file, 'r') as fp:
                 data = json.load(fp)
 
-            return data
-
         if save:
             # regions_data = dict.fromkeys(list(region_ids.data), 0)
             data = {}
 
             # Save JSON to file
             for type_id in type_ids:
+                print("%s/%s" % (type_ids.index(type_id), len(type_ids)))
                 op_type_info = self.esiapp.op['get_universe_types_type_id'](type_id=type_id)
                 type_info = self.esiclient.request(op_type_info)
 
                 # Add the name key
                 data[type_id] = dict(type_info.data)
 
-            with open(self.file, 'w') as fp:
-                json.dump(data, fp, sort_keys=True)
+            with open(self.file, 'w') as f:
+                json.dump(data, f, sort_keys=True)
 
-            return data
+        return data

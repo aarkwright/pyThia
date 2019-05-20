@@ -244,13 +244,10 @@ def index():
 
     # t = TypeIds(esiapp, esiclient)
     m = Markets(esiapp, esiclient)
-    theforge = m.get_data('market_orders', m.region_theforge)
-    domain = m.get_data('market_orders', m.region_domain)
+    m.get_space_rich()
 
+    return Response('done!')  # mimetype='application/json')
 
-
-
-    return Response('done!') #, mimetype='application/json')
 
 @app.route('/debug')
 @login_required
