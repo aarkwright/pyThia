@@ -1,18 +1,18 @@
 # -*- encoding: utf-8 -*-
 import json
 from pathlib import Path
+from classes.helpers import ESIBase
 
 
-class Search:
-    def __init__(self, esiapp, esiclient):
-        self.esiapp = esiapp
-        self.esiclient = esiclient
+class Search(ESIBase):
+    def __init__(self, app, client):
+        super().__init__(app, client)
 
     def get_type_info(self, type_id):
         api = 'universe_types_type_id'
 
-        operation = self.esiapp.op[api](type_id=type_id)
-        response = self.esiclient.request(operation)
+        operation = self.app.op[api](type_id=type_id)
+        response = self.client.request(operation)
 
         # if 'x-pages' in response.header.keys():
         #     pages = response.header['x-pages'][0]
@@ -24,11 +24,9 @@ class Search:
         return response.data
 
 
-
-class Regions:
-    def __init__(self, esiapp, esiclient):
-        self.esiapp = esiapp
-        self.esiclient = esiclient
+class Regions(ESIBase):
+    def __init__(self, app, client):
+        super().__init__(app, client)
 
         # Generics
         self.file = './data/static_regions.json'
@@ -40,8 +38,8 @@ class Regions:
             self.data = self.get_regions(save=True)
 
     def get_regions(self, load=False, save=False):
-        op_regions = self.esiapp.op['get_universe_regions']()
-        region_ids = self.esiclient.request(op_regions)
+        op_regions = self.app.op['get_universe_regions']()
+        region_ids = self.client.request(op_regions)
 
         # Get constellation info
         # Temporary stuff, will refactor to DB storage.
@@ -58,8 +56,8 @@ class Regions:
 
             # Save JSON to file
             for region_id in list(region_ids.data):
-                op_regions_info = self.esiapp.op['get_universe_regions_region_id'](region_id=region_id)
-                region_info = self.esiclient.request(op_regions_info)
+                op_regions_info = self.app.op['get_universe_regions_region_id'](region_id=region_id)
+                region_info = self.client.request(op_regions_info)
 
                 # Add the name key
                 region_name = region_info.data['name']
@@ -69,9 +67,9 @@ class Regions:
                 }
 
                 for constell_id in list(region_info.data['constellations']):
-                    op_constell_info = self.esiapp.op['universe_constellations_constellation_id'](
+                    op_constell_info = self.app.op['universe_constellations_constellation_id'](
                         constellation_id=constell_id)
-                    constell_info = self.esiclient.request(op_constell_info)
+                    constell_info = self.client.request(op_constell_info)
 
                     constell_name = constell_info.data['name']
                     print(region_name, constell_name)
@@ -85,10 +83,9 @@ class Regions:
             return data
 
 
-class TypeIds:
-    def __init__(self, esiapp, esiclient):
-        self.esiapp = esiapp
-        self.esiclient = esiclient
+class TypeIds(ESIBase):
+    def __init__(self, app, client):
+        super().__init__(app, client)
 
         # Generics
         self.file = './data/static_types.json'
@@ -101,12 +98,12 @@ class TypeIds:
 
     def get_types(self, load=False, save=False):
         type_ids = []
-        op_types = self.esiapp.op['get_universe_types'](page=1)
-        pages = self.esiclient.request(op_types).header['x-pages'][0]
+        op_types = self.app.op['get_universe_types'](page=1)
+        pages = self.client.request(op_types).header['x-pages'][0]
 
         for i in range(1, int(pages)+1):
-            op_types = self.esiapp.op['get_universe_types'](page=i)
-            data = self.esiclient.request(op_types).data
+            op_types = self.app.op['get_universe_types'](page=i)
+            data = self.client.request(op_types).data
 
             type_ids.append(data)
 
@@ -120,6 +117,8 @@ class TypeIds:
             with open(self.file, 'r') as fp:
                 data = json.load(fp)
 
+            return data
+
         if save:
             # regions_data = dict.fromkeys(list(region_ids.data), 0)
             data = {}
@@ -127,13 +126,11 @@ class TypeIds:
             # Save JSON to file
             for type_id in type_ids:
                 print("%s/%s" % (type_ids.index(type_id), len(type_ids)))
-                op_type_info = self.esiapp.op['get_universe_types_type_id'](type_id=type_id)
-                type_info = self.esiclient.request(op_type_info)
+                op_type_info = self.app.op['get_universe_types_type_id'](type_id=type_id)
+                type_info = self.client.request(op_type_info)
 
                 # Add the name key
                 data[type_id] = dict(type_info.data)
 
             with open(self.file, 'w') as f:
                 json.dump(data, f, sort_keys=True)
-
-        return data
