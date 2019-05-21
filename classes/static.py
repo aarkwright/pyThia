@@ -24,6 +24,59 @@ class Search(ESIBase):
         return response.data
 
 
+class MarketGroups(ESIBase):
+    def __init__(self, app, client):
+        super().__init__(app, client)
+        self.ids = list(self.get_groups())
+        self.data = []
+        self.parents = {}
+        self.children = {}
+        self.file = './data/market_groups.json'
+
+
+        self.populate()
+        self.write_json_data(self.file, self.data)
+
+    def get_groups(self, ):
+        api = 'markets_groups'
+
+        op = self.app.op[api]()
+        res = self.client.request(op)
+
+        return res.data
+
+    def get_group_info(self, market_group_id):
+        api = 'markets_groups_market_group_id'
+
+        op = self.app.op[api](market_group_id=market_group_id)
+        res = self.client.request(op)
+
+        return res.data
+
+    def populate(self):
+        for mg_id in self.ids:
+            data = dict(self.get_group_info(market_group_id=mg_id))
+            if 'parent_group_id' not in data.keys():
+                # Consider parent
+                data_id = data['market_group_id']
+                del data['market_group_id']
+                del data['description']
+                data['types'] = {}
+                self.parents[data_id] = data
+            else:
+                # Consider child
+                data_id = data['market_group_id']
+                del data['market_group_id']
+                del data['description']
+                # data['types'] = {}
+                self.children[data_id] = data
+
+        # for k, v in self.childrenitems():
+        #     parent_id = v['parent_group_id']
+        #     del v['parent_group_id']
+        #     self.parents[parent_id]['types'][k] = v
+
+
 class Regions(ESIBase):
     def __init__(self, app, client):
         super().__init__(app, client)

@@ -123,7 +123,6 @@ def load_user(character_id):
 # -----------------------------------------------------------------------
 # create the app
 app = EsiApp().get_latest_swagger
-# esiv5 = esiapp.get_v5_swagger
 
 # init the security object
 security = EsiSecurity(
@@ -243,8 +242,9 @@ def index():
         security.update_token(current_user.get_sso_data())
 
     # t = TypeIds(esiapp, esiclient)
-    m = Markets(app, client)
-    m.get_space_rich()
+    # m = Markets(app, client)
+    # m.get_space_rich()
+    market_groups = MarketGroups(app, client)
 
     return Response('done!')  # mimetype='application/json')
 
