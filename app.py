@@ -241,10 +241,8 @@ def index():
     if current_user.is_authenticated:
         security.update_token(current_user.get_sso_data())
 
-    # t = TypeIds(esiapp, esiclient)
-    # m = Markets(app, client)
-    # m.get_space_rich()
-    market_groups = MarketGroups(app, client)
+    m = Markets(app, client)
+    m.get_space_rich()
 
     return Response('done!')  # mimetype='application/json')
 
