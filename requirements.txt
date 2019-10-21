@@ -6,7 +6,7 @@ chardet==3.0.4
 Click==7.0
 config==0.4.2
 cryptography==2.6.1
-ecdsa==0.13.2
+ecdsa==0.13.3
 EsiPy==1.0.0
 Flask==1.0.2
 Flask-Login==0.4.1
